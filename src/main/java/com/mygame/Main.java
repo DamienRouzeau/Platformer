@@ -16,6 +16,7 @@ import com.jme3.scene.shape.Sphere;
 import com.jme3.scene.Spatial;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
+import com.jme3.math.Quaternion;
 
 public class Main extends SimpleApplication implements ActionListener {
     
@@ -223,6 +224,16 @@ public class Main extends SimpleApplication implements ActionListener {
         // Appliquer le mouvement
         playerControl.setWalkDirection(walkDirection.normalizeLocal().multLocal(5f));
         playerControl.setViewDirection(camDir);
+        
+        if (walkDirection.lengthSquared() > 0.001f) { // Si le joueur bouge
+        Quaternion targetRot = new Quaternion();
+        targetRot.lookAt(walkDirection, Vector3f.UNIT_Y);
+
+        // Rotation fluide (slerp = interpolation sphérique)
+        Quaternion currentRot = playerModel.getLocalRotation();
+        currentRot.slerp(currentRot, targetRot, tpf * 10f);
+        playerModel.setLocalRotation(currentRot);
+    }
         
         // Caméra suit le joueur (troisième personne)
         Vector3f playerPos = playerModel.getWorldTranslation().clone();
