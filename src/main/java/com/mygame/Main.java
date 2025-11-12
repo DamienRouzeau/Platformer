@@ -13,6 +13,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
+import com.jme3.scene.Spatial;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 
@@ -20,7 +21,8 @@ public class Main extends SimpleApplication implements ActionListener {
     
     private BulletAppState bulletAppState;
     private BetterCharacterControl playerControl;
-    private Geometry playerGeom;
+    //private Geometry playerGeom;
+    private Spatial playerModel;
     
     private boolean left = false, right = false, forward = false, backward = false;
     private Vector3f walkDirection = new Vector3f();
@@ -75,7 +77,6 @@ public class Main extends SimpleApplication implements ActionListener {
     
     private void createTimer()
     {
-        //font = assetManager.loadFont("Interface/Fonts/ROSSTEN.ttf");
         text = new BitmapText(guiFont);
         text.setSize(24);
         text.setLocalTranslation(10, settings.getHeight() - 10, 0);
@@ -85,24 +86,20 @@ public class Main extends SimpleApplication implements ActionListener {
     }
     
     private void createPlayer() {
-        // Géométrie du joueur (sphère temporaire)
-        Sphere sphere = new Sphere(16, 16, 0.5f);
-        playerGeom = new Geometry("Player", sphere);
-        Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        mat.setColor("Diffuse", ColorRGBA.Blue);
-        mat.setColor("Ambient", ColorRGBA.Blue);
-        mat.setBoolean("UseMaterialColors", true);
-        playerGeom.setMaterial(mat);
+        playerModel = assetManager.loadModel("Models/Player/Player.glb");
+        /*Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        mat.setTexture("DiffuseMap", assetManager.loadTexture("Models/Player/texture.png"));
+        playerModel.setMaterial(mat);*/
         
         // Character Control (physique)
         playerControl = new BetterCharacterControl(0.5f, 1.8f, 30f);
-        playerGeom.addControl(playerControl);
+        playerModel.addControl(playerControl);
         
         // Position initiale
         playerControl.warp(new Vector3f(0, 5, 0));
         
         // Ajouter à la scène et à la physique
-        rootNode.attachChild(playerGeom);
+        rootNode.attachChild(playerModel);
         bulletAppState.getPhysicsSpace().add(playerControl);
     }
     
@@ -228,13 +225,13 @@ public class Main extends SimpleApplication implements ActionListener {
         playerControl.setViewDirection(camDir);
         
         // Caméra suit le joueur (troisième personne)
-        Vector3f playerPos = playerGeom.getWorldTranslation().clone();
+        Vector3f playerPos = playerModel.getWorldTranslation().clone();
         cam.setLocation(playerPos.add(0, 3, 8)); // Caméra derrière et au-dessus
         cam.lookAt(playerPos.add(0, 1, 0), Vector3f.UNIT_Y);
         
         
         // Verification de victoire
-        float winDist = playerGeom.getWorldTranslation().distance(finish.getLocalTranslation());
+        float winDist = playerModel.getWorldTranslation().distance(finish.getLocalTranslation());
         if(winDist < 2f)
         {
             BitmapText finishText = new BitmapText(guiFont);
